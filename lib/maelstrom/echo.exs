@@ -1,0 +1,1 @@
+Maelstrom.Echo.run(%{})
