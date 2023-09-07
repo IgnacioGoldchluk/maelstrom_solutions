@@ -1,7 +1,8 @@
-DIR_PATH=$(dirname $0)
+#!/usr/bin/bash
+set -e
 
-cd $DIR_PATH/..
+FILE_PATH=$(dirname $0)
 
-echo $DIR_PATH
+cd $FILE_PATH
 
 mix run lib/maelstrom/echo.exs

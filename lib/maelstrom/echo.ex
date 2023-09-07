@@ -9,6 +9,6 @@ defmodule Maelstrom.Echo do
   defp read_from_stdin_forever(pid), do: Enum.each(IO.stream(), &handle_message(&1, pid))
 
   defp handle_message(msg, server_pid) do
-    GenServer.cast(server_pid, msg)
+    GenServer.cast(server_pid, {:incoming, msg})
   end
 end
