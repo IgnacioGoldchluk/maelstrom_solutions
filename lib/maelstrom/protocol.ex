@@ -32,6 +32,25 @@ defmodule Maelstrom.Protocol do
         %{
           "body" => %{
             "msg_id" => msg_id,
+            "type" => "topology",
+            "topology" => topology_map
+          },
+          "src" => src,
+          "dest" => node_id,
+          "id" => _id
+        },
+        %{node_id: node_id} = state
+      ) do
+    neighbors = Map.get(topology_map, node_id, [])
+    reply_msg = reply(src, msg_id, %{"type" => "topology_ok"})
+
+    {reply_msg, state |> Map.put(:neighbors, neighbors)}
+  end
+
+  def handle_message(
+        %{
+          "body" => %{
+            "msg_id" => msg_id,
             "type" => "echo",
             "echo" => echo_msg
           },
