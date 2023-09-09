@@ -2,6 +2,8 @@ defmodule Maelstrom.Master do
   require Logger
   use GenServer
 
+  @registry_name :node_registry
+
   def start_link(args) do
     GenServer.start_link(__MODULE__, args)
   end
@@ -17,6 +19,7 @@ defmodule Maelstrom.Master do
 
   def run(args) do
     {:ok, pid} = GenServer.start_link(__MODULE__, args)
+    Registry.start_link(name: @registry_name, keys: :unique)
     read_from_stdin_forever(pid)
   end
 
@@ -33,19 +36,16 @@ defmodule Maelstrom.Master do
   end
 
   defp process_message(%{"body" => %{"node_id" => node_id, "type" => "init"}} = msg, state) do
-    if not Enum.member?(Process.registered() |> Enum.map(&to_string/1), node_id) do
-      initial_state = %{node_id: nil, next_msg_id: 0}
-
-      {:ok, _pid} =
-        GenServer.start_link(Maelstrom.Node, initial_state, name: String.to_atom(node_id))
+    if length(Registry.lookup(@registry_name, node_id)) == 0 do
+      Maelstrom.Node.start_link(node_id)
     end
 
-    GenServer.cast(String.to_existing_atom(node_id), {:incoming, msg})
+    Maelstrom.Node.cast(node_id, {:incoming, msg})
     {:noreply, state}
   end
 
   defp process_message(%{"dest" => node_id} = msg, state) do
-    GenServer.cast(String.to_existing_atom(node_id), {:incoming, msg})
+    Maelstrom.Node.cast(node_id, {:incoming, msg})
     {:noreply, state}
   end
 end

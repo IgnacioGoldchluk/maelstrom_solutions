@@ -2,6 +2,23 @@ defmodule Maelstrom.Node do
   use GenServer
   require Logger
 
+  def start_link(node_id) do
+    initial_state = %{node_id: nil, next_msg_id: 0}
+    GenServer.start_link(__MODULE__, initial_state, name: via_tuple(node_id))
+  end
+
+  defp via_tuple(node_id) do
+    {:via, Registry, {:node_registry, {__MODULE__, node_id}}}
+  end
+
+  def call(node_id, request) do
+    GenServer.call(via_tuple(node_id), request)
+  end
+
+  def cast(node_id, request) do
+    GenServer.cast(via_tuple(node_id), request)
+  end
+
   @impl true
   def init(initial_state) do
     {:ok, initial_state}
