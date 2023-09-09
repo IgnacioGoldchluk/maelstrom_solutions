@@ -1,4 +1,18 @@
 #!/bin/sh
+set -e
+
+MAELSTROM=~/maelstrom/maelstrom/maelstrom
 
 mix compile
-~/maelstrom/maelstrom/maelstrom test -w echo --bin run_echo.sh --nodes n1 --time-limit 10 --log-stderr
+
+for var in "$@"
+do
+  case ${var} in
+    echo)
+      ${MAELSTROM} test -w echo --bin run.sh --nodes n1 --time-limit 10 --log-stderr
+      ;;
+    *)
+      echo "Unknown argument ${var}"
+  esac
+    
+done
