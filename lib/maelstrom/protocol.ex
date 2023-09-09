@@ -48,4 +48,12 @@ defmodule Maelstrom.Protocol do
   defp reply(src, msg_id, body) do
     %{"body" => body |> Map.put("in_reply_to", msg_id), "dest" => src}
   end
+
+  def send_message(msg, src, msg_id) do
+    msg
+    |> Map.put("src", src)
+    |> put_in(["body", "msg_id"], msg_id)
+    |> Jason.encode!()
+    |> IO.puts()
+  end
 end

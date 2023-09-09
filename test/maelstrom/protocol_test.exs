@@ -1,7 +1,25 @@
 defmodule Maelstrom.ProtocolTest do
   use ExUnit.Case
+  import ExUnit.CaptureIO
 
   describe "Maelstrom protocol" do
+    test "send_message/2" do
+      msg = %{"body" => %{"type" => "test"}, "dest" => "c1"}
+      src = "n1"
+      msg_id = 123
+
+      captured_msg =
+        capture_io(fn -> Maelstrom.Protocol.send_message(msg, src, msg_id) end) |> Jason.decode!()
+
+      expected_msg = %{
+        "body" => %{"type" => "test", "msg_id" => 123},
+        "dest" => "c1",
+        "src" => "n1"
+      }
+
+      assert captured_msg == expected_msg
+    end
+
     test "handle_message/2 for 'init' message" do
       init_msg = %{
         "src" => "c1",

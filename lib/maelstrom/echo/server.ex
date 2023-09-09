@@ -25,13 +25,8 @@ defmodule Maelstrom.Echo.Server do
     end
   end
 
-  def handle_cast({:send_message, msg}, %{node_id: n, next_msg_id: nmi} = state) do
-    msg
-    |> Map.put("src", n)
-    |> put_in(["body", "msg_id"], nmi)
-    |> Jason.encode!()
-    |> IO.puts()
-
+  def handle_cast({:send_message, msg}, %{node_id: src, next_msg_id: msg_id} = state) do
+    Maelstrom.Protocol.send_message(msg, src, msg_id)
     {:noreply, state |> Map.update!(:next_msg_id, &(&1 + 1))}
   end
 
