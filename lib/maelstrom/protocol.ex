@@ -133,13 +133,14 @@ defmodule Maelstrom.Protocol do
   end
 
   defp handle_broadcast(
-         %{"body" => %{"message" => msg}},
+         %{"body" => %{"message" => msg}, "src" => src},
          %{messages: msgs, neighbors: nodes} = state
        ) do
     cond do
       not MapSet.member?(msgs, msg) ->
         to_send =
           nodes
+          |> Enum.filter(fn node -> node != src end)
           |> Enum.map(
             &(%{
                 "body" => %{"type" => "broadcast", "message" => msg},

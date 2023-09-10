@@ -60,6 +60,17 @@ defmodule Maelstrom.ProtocolTest do
       assert {[], new_state} = Maelstrom.Protocol.handle_message(repeated_internal, state)
       assert state == new_state
     end
+
+    test "does not send reply to src for internal message", %{state: state, msg: msg} do
+      internal_body = Map.delete(msg["body"], "msg_id")
+
+      neighbor_broadcast =
+        msg
+        |> Map.put("src", state[:neighbors] |> Enum.at(0))
+        |> Map.put("body", internal_body)
+
+      assert {[], _new_state} = Maelstrom.Protocol.handle_message(neighbor_broadcast, state)
+    end
   end
 
   describe "send_message/2" do
