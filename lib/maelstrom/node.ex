@@ -3,7 +3,7 @@ defmodule Maelstrom.Node do
   require Logger
 
   def start_link(node_id) do
-    initial_state = %{node_id: nil, next_msg_id: 0}
+    initial_state = %{node_id: nil, next_msg_id: 0, messages: MapSet.new(), neighbors: []}
     GenServer.start_link(__MODULE__, initial_state, name: via_tuple(node_id))
   end
 
@@ -26,15 +26,19 @@ defmodule Maelstrom.Node do
 
   @impl true
   def handle_cast({:incoming, msg}, state) do
-    {response, new_state} = Maelstrom.Protocol.handle_message(msg, state)
-    send_message(response)
+    {responses, new_state} = Maelstrom.Protocol.handle_message(msg, state)
 
+    send_messages(responses)
     {:noreply, new_state}
   end
 
   def handle_cast({:send_message, msg}, %{node_id: src, next_msg_id: msg_id} = state) do
     Maelstrom.Protocol.send_message(msg, src, msg_id)
     {:noreply, state |> Map.update!(:next_msg_id, &(&1 + 1))}
+  end
+
+  defp send_messages(messages) do
+    messages |> Enum.map(&send_message/1)
   end
 
   defp send_message(message) do

@@ -11,6 +11,9 @@ do
     echo)
       ${MAELSTROM} test -w echo --bin run.sh --nodes n1 --time-limit 10 --log-stderr
       ;;
+    broadcast)
+      ${MAELSTROM} test -w broadcast --bin run.sh --time-limit 20 --log-stderr
+      ;;
     *)
       echo "Unknown argument ${var}"
   esac
