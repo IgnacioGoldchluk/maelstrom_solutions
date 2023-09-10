@@ -116,7 +116,7 @@ defmodule Maelstrom.Protocol do
   defp is_internal?(%{"__ex_meta" => %{"type" => "internal"}}), do: true
   defp is_internal?(_), do: false
 
-  def send_internal_message(%{"__ex_meta" => %{"type" => "internal"}} = msg, src, _msg_id) do
+  defp send_internal_message(%{"__ex_meta" => %{"type" => "internal"}} = msg, src, _msg_id) do
     msg
     |> Map.delete("__ex_meta")
     |> Map.put("src", src)
@@ -124,7 +124,7 @@ defmodule Maelstrom.Protocol do
     |> IO.puts()
   end
 
-  def send_public_message(msg, src, msg_id) do
+  defp send_public_message(msg, src, msg_id) do
     msg
     |> Map.put("src", src)
     |> put_in(["body", "msg_id"], msg_id)

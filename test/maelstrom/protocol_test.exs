@@ -80,6 +80,28 @@ defmodule Maelstrom.ProtocolTest do
 
       assert captured_msg == expected_msg
     end
+
+    test "sends internal message without metadata" do
+      msg = %{
+        "body" => %{"type" => "broadcast", "message" => "test"},
+        "dest" => "n2",
+        "__ex_meta" => %{"type" => "internal"}
+      }
+
+      msg_id = 1
+      src = "n1"
+
+      captured_msg =
+        capture_io(fn -> Maelstrom.Protocol.send_message(msg, src, msg_id) end) |> Jason.decode!()
+
+      expected_msg = %{
+        "body" => %{"type" => "broadcast", "message" => "test"},
+        "dest" => "n2",
+        "src" => src
+      }
+
+      assert captured_msg == expected_msg
+    end
   end
 
   describe "handle_message/2" do
@@ -177,6 +199,32 @@ defmodule Maelstrom.ProtocolTest do
       }
 
       assert response == expected_response
+    end
+
+    test "topology message" do
+      topology = %{"n3" => ["n4", "n5", "n1"], "n1" => ["n2", "n3"]}
+
+      state = %{node_id: "n1", next_msg_id: 0, neighbors: [], messages: MapSet.new()}
+
+      msg = %{
+        "body" => %{"msg_id" => 1, "type" => "topology", "topology" => topology},
+        "src" => "c1",
+        "dest" => "n1",
+        "id" => 123
+      }
+
+      {[reply], new_state} = Maelstrom.Protocol.handle_message(msg, state)
+
+      expected_reply = %{
+        "body" => %{
+          "type" => "topology_ok",
+          "in_reply_to" => get_in(msg, ["body", "msg_id"])
+        },
+        "dest" => "c1"
+      }
+
+      assert reply == expected_reply
+      assert new_state[:neighbors] == topology["n1"]
     end
   end
 end
