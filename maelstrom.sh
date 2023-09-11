@@ -12,7 +12,10 @@ do
       ${MAELSTROM} test -w echo --bin run.sh --nodes n1 --time-limit 10 --log-stderr
       ;;
     broadcast)
-      ${MAELSTROM} test -w broadcast --bin run.sh --time-limit 20 --rate 100 --log-stderr
+      ${MAELSTROM} test -w broadcast --bin run.sh --time-limit 20 --rate 100
+      ;;
+    broadcast-with-failures)
+      ${MAELSTROM} test -w broadcast --bin run.sh --time-limit 20 --nemesis partition
       ;;
     *)
       echo "Unknown argument ${var}"
