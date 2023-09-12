@@ -1,1 +1,1 @@
-Maelstrom.Master.run(%{})
+Maelstrom.Master.run(%{node_module: Maelstrom.Broadcast.Node})

@@ -1,4 +1,4 @@
-defmodule Maelstrom.ProtocolTest do
+defmodule Maelstrom.Broadcast.ProtocolTest do
   use ExUnit.Case
   import ExUnit.CaptureIO
 
@@ -32,7 +32,7 @@ defmodule Maelstrom.ProtocolTest do
       state: state,
       msg: msg
     } do
-      {replies, new_state} = Maelstrom.Protocol.handle_message(msg, state)
+      {replies, new_state} = Maelstrom.Broadcast.Protocol.handle_message(msg, state)
 
       new_message = get_in(msg, ["body", "message"])
       assert new_state[:messages] == MapSet.put(state[:messages], new_message)
@@ -64,7 +64,7 @@ defmodule Maelstrom.ProtocolTest do
       repeated =
         msg |> put_in(["body", "message"], state[:messages] |> MapSet.to_list() |> Enum.at(0))
 
-      assert {[reply], new_state} = Maelstrom.Protocol.handle_message(repeated, state)
+      assert {[reply], new_state} = Maelstrom.Broadcast.Protocol.handle_message(repeated, state)
       assert new_state[:messages] == state[:messages]
 
       expected_reply = %{
@@ -84,7 +84,7 @@ defmodule Maelstrom.ProtocolTest do
       repeated_internal = put_in(msg, ["body", "message"], duplicated_message)
 
       assert {[reply] = replies, new_state} =
-               Maelstrom.Protocol.handle_message(repeated_internal, state)
+               Maelstrom.Broadcast.Protocol.handle_message(repeated_internal, state)
 
       assert new_state == state |> update_next_msg_id(replies)
 
@@ -107,7 +107,7 @@ defmodule Maelstrom.ProtocolTest do
       src = "n1"
 
       captured_msg =
-        capture_io(fn -> Maelstrom.Protocol.send_message(msg, src) end)
+        capture_io(fn -> Maelstrom.Broadcast.Protocol.send_message(msg, src) end)
         |> Jason.decode!()
 
       expected_msg = %{
@@ -131,7 +131,8 @@ defmodule Maelstrom.ProtocolTest do
       src = "n1"
 
       captured_msg =
-        capture_io(fn -> Maelstrom.Protocol.send_message(msg, src) end) |> Jason.decode!()
+        capture_io(fn -> Maelstrom.Broadcast.Protocol.send_message(msg, src) end)
+        |> Jason.decode!()
 
       expected_msg = %{
         "body" => %{"type" => "broadcast", "message" => "test", "msg_id" => msg_id},
@@ -166,7 +167,7 @@ defmodule Maelstrom.ProtocolTest do
       uninitialized_state = Map.put(state, :node_id, nil)
 
       {[response] = responses, new_state} =
-        Maelstrom.Protocol.handle_message(init_msg, uninitialized_state)
+        Maelstrom.Broadcast.Protocol.handle_message(init_msg, uninitialized_state)
 
       assert response == %{
                "body" => %{
@@ -196,7 +197,8 @@ defmodule Maelstrom.ProtocolTest do
         "id" => 1
       }
 
-      {[response] = responses, new_state} = Maelstrom.Protocol.handle_message(echo_msg, state)
+      {[response] = responses, new_state} =
+        Maelstrom.Broadcast.Protocol.handle_message(echo_msg, state)
 
       assert new_state == state |> update_next_msg_id(responses)
 
@@ -225,7 +227,7 @@ defmodule Maelstrom.ProtocolTest do
 
       no_neighbors = state |> Map.put(:neighbors, []) |> Map.put(:messages, MapSet.new())
 
-      {[response], new_state} = Maelstrom.Protocol.handle_message(msg, no_neighbors)
+      {[response], new_state} = Maelstrom.Broadcast.Protocol.handle_message(msg, no_neighbors)
 
       assert new_state[:messages] ==
                MapSet.put(state[:messages], "test")
@@ -250,7 +252,8 @@ defmodule Maelstrom.ProtocolTest do
         "id" => 1
       }
 
-      {[response] = responses, new_state} = Maelstrom.Protocol.handle_message(read_msg, state)
+      {[response] = responses, new_state} =
+        Maelstrom.Broadcast.Protocol.handle_message(read_msg, state)
 
       expected_state = update_next_msg_id(state, responses)
       assert expected_state == new_state
@@ -278,7 +281,7 @@ defmodule Maelstrom.ProtocolTest do
         "id" => 123
       }
 
-      {[reply], new_state} = Maelstrom.Protocol.handle_message(msg, state)
+      {[reply], new_state} = Maelstrom.Broadcast.Protocol.handle_message(msg, state)
 
       expected_reply = %{
         "body" => %{

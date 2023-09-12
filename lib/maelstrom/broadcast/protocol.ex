@@ -1,4 +1,4 @@
-defmodule Maelstrom.Protocol do
+defmodule Maelstrom.Broadcast.Protocol do
   @moduledoc """
   Maelstrom protocol module
   """

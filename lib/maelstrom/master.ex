@@ -35,17 +35,20 @@ defmodule Maelstrom.Master do
     end
   end
 
-  defp process_message(%{"body" => %{"node_id" => node_id, "type" => "init"}} = msg, state) do
+  defp process_message(
+         %{"body" => %{"node_id" => node_id, "type" => "init"}} = msg,
+         %{node_module: node_module} = state
+       ) do
     if length(Registry.lookup(@registry_name, node_id)) == 0 do
-      Maelstrom.Node.start_link(node_id)
+      node_module.start_link(node_id)
     end
 
-    Maelstrom.Node.cast(node_id, {:incoming, msg})
+    node_module.cast(node_id, {:incoming, msg})
     {:noreply, state}
   end
 
-  defp process_message(%{"dest" => node_id} = msg, state) do
-    Maelstrom.Node.cast(node_id, {:incoming, msg})
+  defp process_message(%{"dest" => node_id} = msg, %{node_module: node_module} = state) do
+    node_module.cast(node_id, {:incoming, msg})
     {:noreply, state}
   end
 end
