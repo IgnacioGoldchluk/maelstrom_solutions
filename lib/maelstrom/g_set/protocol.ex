@@ -1,28 +1,5 @@
 defmodule Maelstrom.GSet.Protocol do
-  import Maelstrom.Protocol
-
-  def handle_message(msg, state) do
-    handle(msg, state)
-    |> insert_msg_id()
-  end
-
-  defp handle(
-         %{
-           "body" => %{
-             "msg_id" => msg_id,
-             "type" => "init",
-             "node_id" => node_id,
-             "node_ids" => node_ids
-           },
-           "src" => src
-         },
-         %{node_id: nil} = state
-       ) do
-    reply_msg = reply(src, msg_id, %{"type" => "init_ok"})
-    new_state = state |> Map.put(:node_id, node_id) |> Map.put(:node_ids, node_ids)
-
-    {[reply_msg], new_state}
-  end
+  use Maelstrom.Protocol
 
   defp handle(
          %{
