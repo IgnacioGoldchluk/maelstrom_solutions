@@ -1,6 +1,5 @@
 defmodule Maelstrom.GSet.ProtocolTest do
   use ExUnit.Case
-  import ExUnit.CaptureIO
 
   describe "g_set" do
     setup do
@@ -129,25 +128,6 @@ defmodule Maelstrom.GSet.ProtocolTest do
                |> Map.put(:node_id, "n1")
                |> Map.put(:node_ids, ["n1"])
                |> Map.update!(:next_msg_id, &(&1 + 1))
-    end
-  end
-
-  describe "send message" do
-    test "outputs serialized json to stdout" do
-      msg = %{"body" => %{"type" => "test", "msg_id" => 123}, "dest" => "c1"}
-      src = "n1"
-
-      captured_msg =
-        capture_io(fn -> Maelstrom.GSet.Protocol.send_message(msg, src) end)
-        |> Jason.decode!()
-
-      expected_msg = %{
-        "body" => %{"type" => "test", "msg_id" => 123},
-        "dest" => "c1",
-        "src" => "n1"
-      }
-
-      assert captured_msg == expected_msg
     end
   end
 end

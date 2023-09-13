@@ -41,7 +41,7 @@ defmodule Maelstrom.PnCounter.Node do
   end
 
   def handle_cast({:send_message, msg}, %{node_id: src} = state) do
-    Maelstrom.GSet.Protocol.send_message(msg, src)
+    Maelstrom.Protocol.send_message(msg, src)
     {:noreply, state}
   end
 
