@@ -23,6 +23,9 @@ do
     gset-with-partition)
       ${MAELSTROM} test -w g-set --bin run_gset.sh --time-limit 10 --rate 100 --nemesis partition
       ;;
+    pn-counter)
+      ${MAELSTROM} test -w pn-counter --bin run_pn_counter.sh --time-limit 20 --rate 10
+      ;;
     *)
       echo "Unknown argument ${var}"
   esac
