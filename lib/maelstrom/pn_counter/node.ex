@@ -1,5 +1,5 @@
 defmodule Maelstrom.PnCounter.Node do
-  use GenServer
+  use Maelstrom.Node
 
   @broadcast_ms 500
 
@@ -12,18 +12,6 @@ defmodule Maelstrom.PnCounter.Node do
     }
 
     GenServer.start_link(__MODULE__, initial_state, name: via_tuple(node_id))
-  end
-
-  defp via_tuple(node_id) do
-    {:via, Registry, {:node_registry, {__MODULE__, node_id}}}
-  end
-
-  def call(node_id, request) do
-    GenServer.call(via_tuple(node_id), request)
-  end
-
-  def cast(node_id, request) do
-    GenServer.cast(via_tuple(node_id), request)
   end
 
   @impl true
