@@ -9,4 +9,13 @@ defmodule Maelstrom.Datomic.State do
   defp transact([["append", k, v] = request | rest], state, responses) do
     transact(rest, Map.update(state, k, [v], &(&1 ++ [v])), [request | responses])
   end
+
+  def serialize(state) do
+    state
+    |> Map.to_list()
+    |> Enum.map(&Tuple.to_list/1)
+  end
+
+  def deserialize(nil), do: Map.new()
+  def deserialize(state), do: Map.new(state, fn [k, v] -> {k, v} end)
 end

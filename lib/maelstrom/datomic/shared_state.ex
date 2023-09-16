@@ -1,21 +1,15 @@
 defmodule Maelstrom.Datomic.SharedState do
-  def transact(requests, state), do: transact(requests, state, [])
-  defp transact([], state, responses), do: {Enum.reverse(responses), state}
+  def transact(requests, %{next_msg_id: msg_id, node_id: src} = state) do
+    database = Maelstrom.Datomic.LinKv.get_db(src, msg_id)
+    {responses, updated_database} = Maelstrom.Datomic.State.transact(requests, database)
 
-  defp transact([msg | rest], state, responses) do
-    {value, new_state} = sync_rpc(msg, state)
-    transact(rest, new_state, [value | responses])
-  end
+    # Do not reply if there were any errors
+    responses =
+      case Maelstrom.Datomic.LinKv.put_db(updated_database, database, src, msg_id + 1) do
+        :ok -> responses
+        :error -> []
+      end
 
-  defp sync_rpc(["r", k, nil], %{next_msg_id: msg_id, node_id: node_id} = state) do
-    {value, next_msg_id} = Maelstrom.Datomic.LinKv.sync_read(node_id, k, msg_id)
-
-    {["r", k, value], Map.put(state, :next_msg_id, next_msg_id)}
-  end
-
-  defp sync_rpc(["append", k, value], %{next_msg_id: msg_id, node_id: node_id} = state) do
-    {:ok, next_msg_id} = Maelstrom.Datomic.LinKv.sync_append(node_id, k, value, msg_id)
-
-    {["append", k, value], Map.put(state, :next_msg_id, next_msg_id)}
+    {responses, state |> Map.put(:next_msg_id, msg_id + 2)}
   end
 end

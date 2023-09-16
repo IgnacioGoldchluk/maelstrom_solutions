@@ -1,24 +1,27 @@
 defmodule Maelstrom.Datomic.LinKv do
   @dest "lin-kv"
+  @key "root"
 
-  def sync_read(src, key, msg_id) do
-    msg = %{"body" => %{"type" => "read", "key" => key, "msg_id" => msg_id}, "dest" => @dest}
+  def get_db(src, msg_id) do
+    msg = %{
+      "body" => %{"type" => "read", "key" => @key, "msg_id" => msg_id},
+      "dest" => @dest
+    }
+
     Maelstrom.Protocol.send_message(msg, src)
-    value = await_for_response(msg_id, src) |> parse_response()
-    {value, msg_id + 1}
+
+    await_for_response(msg_id, src)
+    |> parse_response()
+    |> Maelstrom.Datomic.State.deserialize()
   end
 
-  def sync_append(src, key, value, msg_id) do
-    {current, msg_id} = sync_read(src, key, msg_id)
-
-    list = if(current == nil, do: [], else: current)
-
+  def put_db(value, previous_value, src, msg_id) do
     msg = %{
       "body" => %{
         "type" => "cas",
-        "key" => key,
-        "from" => list,
-        "to" => list ++ [value],
+        "key" => @key,
+        "to" => value |> Maelstrom.Datomic.State.serialize(),
+        "from" => previous_value |> Maelstrom.Datomic.State.serialize(),
         "msg_id" => msg_id,
         "create_if_not_exists" => true
       },
@@ -26,8 +29,7 @@ defmodule Maelstrom.Datomic.LinKv do
     }
 
     Maelstrom.Protocol.send_message(msg, src)
-    value = await_for_response(msg_id, src) |> parse_response()
-    {value, msg_id + 1}
+    await_for_response(msg_id, src) |> parse_response()
   end
 
   defp await_for_response(msg_id, node_id) do
@@ -46,11 +48,12 @@ defmodule Maelstrom.Datomic.LinKv do
     result
   end
 
-  defp parse_response(%{
-         "body" => %{"type" => "error", "code" => 20, "text" => "key does not exist"}
-       }),
-       do: nil
-
+  defp parse_response(%{"body" => %{"type" => "error", "code" => 20}}), do: nil
   defp parse_response(%{"body" => %{"type" => "read_ok", "value" => value}}), do: value
   defp parse_response(%{"body" => %{"type" => "cas_ok"}}), do: :ok
+
+  defp parse_response(other) do
+    IO.puts(:stderr, "Invalid response #{other |> Jason.encode!()}")
+    :error
+  end
 end
