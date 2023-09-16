@@ -27,7 +27,7 @@ do
       ${MAELSTROM} test -w pn-counter --bin run_pn_counter.sh --time-limit 20 --rate 10
       ;;
     txn-list-append)
-      ${MAELSTROM} test -w txn-list-append --bin run_txn_list_append.sh --time-limit 10 --log-stderr --node-count 1
+      ${MAELSTROM} test -w txn-list-append --bin run_txn_list_append.sh --time-limit 10 --node-count 1
       ;;
     *)
       echo "Unknown argument ${var}"

@@ -1,8 +1,6 @@
 defmodule Maelstrom.Datomic.Node do
   use Maelstrom.Node
 
-  @broadcast_ms 500
-
   def start_link(node_id) do
     initial_state = %{
       node_id: nil,
@@ -16,7 +14,6 @@ defmodule Maelstrom.Datomic.Node do
 
   @impl true
   def init(initial_state) do
-    Process.send_after(self(), :replicate, @broadcast_ms)
     {:ok, initial_state}
   end
 
@@ -30,17 +27,6 @@ defmodule Maelstrom.Datomic.Node do
 
   def handle_cast({:send_message, msg}, %{node_id: src} = state) do
     Maelstrom.Protocol.send_message(msg, src)
-    {:noreply, state}
-  end
-
-  @impl true
-  def handle_info(:replicate, state) do
-    # {messages, new_state} = Maelstrom.Datomic.Protocol.replicate_messages(state)
-
-    # send_messages(messages)
-
-    # Process.send_after(self(), :replicate, @broadcast_ms)
-
     {:noreply, state}
   end
 
