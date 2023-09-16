@@ -5,8 +5,7 @@ defmodule Maelstrom.Datomic.Node do
     initial_state = %{
       node_id: nil,
       next_msg_id: 0,
-      node_ids: [],
-      state: Map.new()
+      node_ids: []
     }
 
     GenServer.start_link(__MODULE__, initial_state, name: via_tuple(node_id))
