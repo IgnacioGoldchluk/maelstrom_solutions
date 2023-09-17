@@ -4,7 +4,6 @@ defmodule Maelstrom.Datomic.Node do
   def start_link(node_id) do
     initial_state = %{
       node_id: nil,
-      next_msg_id: 0,
       node_ids: []
     }
 
