@@ -37,15 +37,12 @@ defmodule Maelstrom.GSet.Protocol do
     {[], state |> Map.put(:set, MapSet.union(set, recv_set |> MapSet.new()))}
   end
 
-  def replicate_messages(%{node_ids: neighbors, node_id: node_id, set: set} = state) do
+  def replicate_messages(%{node_ids: neighbors, node_id: node_id, set: set}) do
     set_as_list = set |> MapSet.to_list()
     base_message = %{"body" => %{"type" => "replicate", "value" => set_as_list}}
 
-    messages =
-      neighbors
-      |> Enum.filter(&(&1 != node_id))
-      |> Enum.map(&(base_message |> Map.put("dest", &1)))
-
-    insert_msg_id({messages, state})
+    neighbors
+    |> Enum.filter(&(&1 != node_id))
+    |> Enum.map(&(base_message |> Map.put("dest", &1)))
   end
 end

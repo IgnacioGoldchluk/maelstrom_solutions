@@ -1,20 +1,14 @@
 defmodule Maelstrom.Protocol do
   def send_message(msg, src) do
+    msg_id = Maelstrom.MsgIdGen.gen_id(src)
+
     msg
     |> Map.put("src", src)
+    |> put_in(["body", "msg_id"], msg_id)
     |> Jason.encode!()
     |> IO.puts()
-  end
 
-  def insert_msg_id({replies, %{next_msg_id: nm_id} = state}) do
-    {replies_with_msg_id, next_msg_id} =
-      replies
-      |> Enum.reduce({[], nm_id}, fn curr_reply, {acc_replies, acc_nm_id} ->
-        new_reply = curr_reply |> put_in(["body", "msg_id"], acc_nm_id)
-        {[new_reply | acc_replies], acc_nm_id + 1}
-      end)
-
-    {replies_with_msg_id, state |> Map.put(:next_msg_id, next_msg_id)}
+    msg_id
   end
 
   def reply(src, msg_id, body) do
@@ -34,7 +28,6 @@ defmodule Maelstrom.Protocol do
     quote do
       def handle_message(msg, state) do
         handle(msg, state)
-        |> insert_msg_id()
       end
 
       # Init message, common to every node

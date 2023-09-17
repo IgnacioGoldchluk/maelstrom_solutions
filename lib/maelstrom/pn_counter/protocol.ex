@@ -49,18 +49,15 @@ defmodule Maelstrom.PnCounter.Protocol do
     {[], state |> Map.update!(:crdt, &Maelstrom.PnCounter.Crdt.replicate(&1, recv_crdt))}
   end
 
-  def replicate_messages(%{node_ids: neighbors, node_id: node_id, crdt: crdt} = state) do
+  def replicate_messages(%{node_ids: neighbors, node_id: node_id, crdt: crdt}) do
     value = Maelstrom.PnCounter.Crdt.replicate_send(crdt)
 
     base_message = %{
       "body" => %{"type" => "replicate", "value" => value}
     }
 
-    messages =
-      neighbors
-      |> Enum.filter(&(&1 != node_id))
-      |> Enum.map(&(base_message |> Map.put("dest", &1)))
-
-    insert_msg_id({messages, state})
+    neighbors
+    |> Enum.filter(&(&1 != node_id))
+    |> Enum.map(&(base_message |> Map.put("dest", &1)))
   end
 end

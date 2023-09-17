@@ -6,7 +6,6 @@ defmodule Maelstrom.GSet.Node do
   def start_link(node_id) do
     initial_state = %{
       node_id: nil,
-      next_msg_id: 0,
       node_ids: [],
       set: MapSet.new()
     }
@@ -35,13 +34,10 @@ defmodule Maelstrom.GSet.Node do
 
   @impl true
   def handle_info(:replicate, state) do
-    {messages, new_state} = Maelstrom.GSet.Protocol.replicate_messages(state)
-
-    send_messages(messages)
-
+    Maelstrom.GSet.Protocol.replicate_messages(state) |> send_messages()
     Process.send_after(self(), :replicate, @broadcast_ms)
 
-    {:noreply, new_state}
+    {:noreply, state}
   end
 
   defp send_messages(messages) do
