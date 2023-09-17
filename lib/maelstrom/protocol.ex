@@ -1,6 +1,6 @@
 defmodule Maelstrom.Protocol do
   def send_message(msg, src) do
-    msg_id = Maelstrom.MsgIdGen.gen_id(src)
+    msg_id = Maelstrom.MsgIdGen.next(src)
 
     msg
     |> Map.put("src", src)
