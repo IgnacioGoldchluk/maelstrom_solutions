@@ -1,4 +1,18 @@
 defmodule Maelstrom.Datomic.State do
+  def transact_requests(requests, %{node_id: src} = state) do
+    database = Maelstrom.Datomic.LinKv.get_db(src)
+    {responses, updated_database} = transact(requests, database)
+
+    # Do not reply if there were any errors
+    responses =
+      case Maelstrom.Datomic.LinKv.put_db(updated_database, database, src) do
+        :ok -> responses
+        :error -> []
+      end
+
+    {responses, state}
+  end
+
   def transact(requests, state), do: transact(requests, state, [])
   defp transact([], state, responses), do: {Enum.reverse(responses), state}
 
