@@ -2,7 +2,8 @@ defmodule Maelstrom.Master do
   require Logger
   use GenServer
 
-  @registry_name :node_registry
+  @node_registry :node_registry
+  @msg_id_gen_registry :msg_id_gen_registry
 
   def start_link(args) do
     GenServer.start_link(__MODULE__, args)
@@ -19,7 +20,10 @@ defmodule Maelstrom.Master do
 
   def run(args) do
     {:ok, pid} = GenServer.start_link(__MODULE__, args)
-    Registry.start_link(name: @registry_name, keys: :unique)
+    Registry.start_link(name: @node_registry, keys: :unique)
+    Registry.start_link(name: @msg_id_gen_registry, keys: :unique)
+
+    for reg <- Map.get(args, :registries, []), do: Registry.start_link(name: reg, keys: :unique)
     read_from_stdin_forever(pid)
   end
 
@@ -39,8 +43,9 @@ defmodule Maelstrom.Master do
          %{"body" => %{"node_id" => node_id, "type" => "init"}} = msg,
          %{node_module: node_module} = state
        ) do
-    if length(Registry.lookup(@registry_name, node_id)) == 0 do
+    if length(Registry.lookup(@node_registry, node_id)) == 0 do
       node_module.start_link(node_id)
+      Maelstrom.MsgIdGen.start_link(node_id)
     end
 
     node_module.cast(node_id, {:incoming, msg})
