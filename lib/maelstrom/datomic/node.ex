@@ -1,11 +1,15 @@
 defmodule Maelstrom.Datomic.Node do
   use Maelstrom.Node
 
+  alias Maelstrom.Datomic.IdGen
+
   def start_link(node_id) do
     initial_state = %{
       node_id: nil,
       node_ids: []
     }
+
+    IdGen.start_link(node_id)
 
     GenServer.start_link(__MODULE__, initial_state, name: via_tuple(node_id))
   end

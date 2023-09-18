@@ -9,7 +9,6 @@ defmodule Maelstrom.Datomic.LinKv do
 
     await_for_response(msg_id, src)
     |> parse_response()
-    |> Maelstrom.Datomic.State.deserialize()
   end
 
   def write_key(src, key, value) do
@@ -34,8 +33,8 @@ defmodule Maelstrom.Datomic.LinKv do
       "body" => %{
         "type" => "cas",
         "key" => @key,
-        "to" => value |> Maelstrom.Datomic.State.serialize(),
-        "from" => previous_value |> Maelstrom.Datomic.State.serialize(),
+        "to" => value,
+        "from" => previous_value,
         "create_if_not_exists" => true
       },
       "dest" => @dest
