@@ -1,10 +1,10 @@
 defmodule Maelstrom.Datomic.State do
   defstruct [:node_id, :state]
 
-  alias Maelstrom.Datomic.{IdGen, LinKv, Thunk}
+  alias Maelstrom.Datomic.{IdGen, KvStore, Thunk}
 
   def transact_requests(requests, %{node_id: src} = state) do
-    database = LinKv.get_db(src) |> deserialize(src)
+    database = KvStore.get_db(src) |> deserialize(src)
     {responses, updated_database} = transact(requests, database)
 
     updated_database |> save()
@@ -14,7 +14,7 @@ defmodule Maelstrom.Datomic.State do
 
     # Do not reply if there were any errors
     responses =
-      case LinKv.put_db(updated_db_ser, db_ser, src) do
+      case KvStore.put_db(updated_db_ser, db_ser, src) do
         :ok -> responses
         :error -> []
       end

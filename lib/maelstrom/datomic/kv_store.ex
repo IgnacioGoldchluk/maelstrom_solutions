@@ -1,5 +1,6 @@
-defmodule Maelstrom.Datomic.LinKv do
+defmodule Maelstrom.Datomic.KvStore do
   @dest "lin-kv"
+  @lww_kv "lww-kv"
   @key "root"
 
   def get_db(src) do
@@ -12,7 +13,7 @@ defmodule Maelstrom.Datomic.LinKv do
   end
 
   def write_key(src, key, value) do
-    msg = %{"body" => %{"type" => "write", "key" => key, "value" => value}, "dest" => @dest}
+    msg = %{"body" => %{"type" => "write", "key" => key, "value" => value}, "dest" => @lww_kv}
     msg_id = Maelstrom.Protocol.send_message(msg, src)
 
     await_for_response(msg_id, src)
@@ -20,7 +21,7 @@ defmodule Maelstrom.Datomic.LinKv do
   end
 
   def get_key(src, key) do
-    msg = %{"body" => %{"type" => "read", "key" => key}, "dest" => @dest}
+    msg = %{"body" => %{"type" => "read", "key" => key}, "dest" => @lww_kv}
 
     msg_id = Maelstrom.Protocol.send_message(msg, src)
 
