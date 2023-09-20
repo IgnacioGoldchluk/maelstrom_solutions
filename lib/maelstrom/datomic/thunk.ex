@@ -1,7 +1,7 @@
 defmodule Maelstrom.Datomic.Thunk do
   defstruct [:id, :value, :saved?, :node_id]
 
-  alias Maelstrom.Datomic.{KvStore, IdGen}
+  alias Maelstrom.Datomic.{KvStore, IdGen, Cache}
 
   def new(node_id, thunk_id, saved) do
     %__MODULE__{node_id: node_id, id: thunk_id, value: nil, saved?: saved}
@@ -14,6 +14,7 @@ defmodule Maelstrom.Datomic.Thunk do
         load(thunk)
 
       value ->
+        Cache.store(id, value)
         Map.put(thunk, :value, value)
     end
   end

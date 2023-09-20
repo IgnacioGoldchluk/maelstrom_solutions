@@ -3,6 +3,8 @@ defmodule Maelstrom.Datomic.KvStore do
   @lww_kv "lww-kv"
   @key "root"
 
+  alias Maelstrom.Datomic.Cache
+
   def get_db(src) do
     msg = %{"body" => %{"type" => "read", "key" => @key}, "dest" => @dest}
 
@@ -21,6 +23,13 @@ defmodule Maelstrom.Datomic.KvStore do
   end
 
   def get_key(src, key) do
+    case Cache.get(key) do
+      nil -> fetch_key(src, key)
+      value -> value
+    end
+  end
+
+  def fetch_key(src, key) do
     msg = %{"body" => %{"type" => "read", "key" => key}, "dest" => @lww_kv}
 
     msg_id = Maelstrom.Protocol.send_message(msg, src)
