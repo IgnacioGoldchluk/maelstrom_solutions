@@ -12,9 +12,16 @@ defmodule Maelstrom.Datomic.State do
     updated_db_ser = updated_database |> serialize()
     db_ser = database |> serialize()
 
+    # Do not send request if we only received read operations
+    result =
+      cond do
+        Map.equal?(database, updated_database) -> :ok
+        true -> KvStore.put_db(updated_db_ser, db_ser, src)
+      end
+
     # Do not reply if there were any errors
     responses =
-      case KvStore.put_db(updated_db_ser, db_ser, src) do
+      case result do
         :ok -> responses
         :error -> []
       end
