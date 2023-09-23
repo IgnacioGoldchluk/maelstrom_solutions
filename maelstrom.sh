@@ -29,6 +29,9 @@ do
     txn-list-append)
       ${MAELSTROM} test -w txn-list-append --bin run_txn_list_append.sh --time-limit 10 --node-count 2 --rate 100
       ;;
+    lin-kv)
+      ${MAELSTROM} test -w lin-kv --bin run_raft.sh --time-limit 10 --rate 10 --node-count 1 --concurrency 2n
+      ;;
     *)
       echo "Unknown argument ${var}"
   esac
