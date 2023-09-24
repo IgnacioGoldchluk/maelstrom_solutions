@@ -14,7 +14,7 @@ defmodule Maelstrom.GSet.ProtocolTest do
     end
 
     test "add message replies and inserts in internal state", %{state: state} do
-      %{node_id: dest, set: set, next_msg_id: nm_id} = state
+      %{node_id: dest, set: set} = state
 
       src = "c1"
       element = 3
@@ -34,7 +34,7 @@ defmodule Maelstrom.GSet.ProtocolTest do
                Maelstrom.GSet.Protocol.handle_message(msg, state)
 
       expected_reply = %{
-        "body" => %{"type" => "add_ok", "msg_id" => nm_id, "in_reply_to" => msg["body"]["msg_id"]},
+        "body" => %{"type" => "add_ok", "in_reply_to" => msg["body"]["msg_id"]},
         "dest" => src
       }
 
@@ -43,7 +43,7 @@ defmodule Maelstrom.GSet.ProtocolTest do
     end
 
     test "read returns the full set", %{state: state} do
-      %{node_id: dest, set: set, next_msg_id: nm_id} = state
+      %{node_id: dest, set: set} = state
 
       src = "c1"
 
@@ -63,8 +63,7 @@ defmodule Maelstrom.GSet.ProtocolTest do
         "body" => %{
           "type" => "read_ok",
           "value" => set |> MapSet.to_list(),
-          "in_reply_to" => msg["body"]["msg_id"],
-          "msg_id" => nm_id
+          "in_reply_to" => msg["body"]["msg_id"]
         },
         "dest" => src
       }
@@ -75,7 +74,7 @@ defmodule Maelstrom.GSet.ProtocolTest do
     test "replicate creates one message for each neighbor", %{state: state} do
       %{node_ids: neighbors, set: set, node_id: node_id} = state
 
-      assert {msgs, _new_state} = Maelstrom.GSet.Protocol.replicate_messages(state)
+      msgs = Maelstrom.GSet.Protocol.replicate_messages(state)
 
       dests = Enum.map(msgs, &Map.get(&1, "dest")) |> MapSet.new()
       assert neighbors |> MapSet.new() |> MapSet.delete(node_id) == dests
@@ -117,8 +116,7 @@ defmodule Maelstrom.GSet.ProtocolTest do
       assert response == %{
                "body" => %{
                  "in_reply_to" => 123,
-                 "type" => "init_ok",
-                 "msg_id" => state[:next_msg_id]
+                 "type" => "init_ok"
                },
                "dest" => "c1"
              }
@@ -127,7 +125,6 @@ defmodule Maelstrom.GSet.ProtocolTest do
                uninitialized_state
                |> Map.put(:node_id, "n1")
                |> Map.put(:node_ids, ["n1"])
-               |> Map.update!(:next_msg_id, &(&1 + 1))
     end
   end
 end
