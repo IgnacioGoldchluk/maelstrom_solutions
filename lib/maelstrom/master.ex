@@ -34,7 +34,7 @@ defmodule Maelstrom.Master do
         process_message(parsed_msg, state)
 
       {:error, _} ->
-        IO.puts(:stderr, "Invalid message: #{msg}")
+        Maelstrom.Debug.debug("Invalid message: #{msg}")
         {:noreply, state}
     end
   end
