@@ -1,21 +1,11 @@
 # DistributedSystemsExercises
 
-**TODO: Add description**
+## Requirements
+- [Maelstrom](https://github.com/jepsen-io/maelstrom)
+- Elixir 1.14 or higher
+- OTP 25 or higher
 
-## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `distributed_systems_exercises` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:distributed_systems_exercises, "~> 0.1.0"}
-  ]
-end
-```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/distributed_systems_exercises>.
+## Usage
+1. Set the `MAELSTROM_PATH` environment variable to the path where the Maelstrom executable was installed.
+2. Run `./maelstrom.sh ${CHALLENGE}` from the root folder of this project. The list of implemented challenges can be found in `maelstrom.sh`.
 
